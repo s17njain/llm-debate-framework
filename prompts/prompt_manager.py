@@ -1,12 +1,9 @@
 # prompts/prompt_manager.py
 
-from config import SCENARIO
-
-def get_base_prompt(role):
-    base_prompt = ""
+def get_base_prompt(role, debate_topic):
     if (role == "JUDGE"):
-        base_prompt += (
-            f"You are an impartial ethics evaluator.\n"
+        return (
+            f"You are an impartial legal-ethical evaluator.\n"
             f"Your task is to evaluate the following debate between multiple participants.\n"
             f"Be fair and concise in your evaluation. Do not invent facts. Focus on argument structure, ethical coherence, and clarity of reasoning.\n\n"
             f"Please provide the following in your response:\n"
@@ -17,10 +14,10 @@ def get_base_prompt(role):
             f"Limit your response to 600 words.\n\n"
         )
     else:
-        base_prompt += (
-            f"You are an ethics advisor adhering to the principles of {role}.\n"
+        return (
+            # f"You are an ethics advisor adhering to the principles of {role}.\n"
+            f"You are a legal-ethical analyst adhering to the principles of {role}."
             f"Your task is to participate in an ongoing policy debate.\n\n"
-            f"Scenario:\n{SCENARIO['description']}\n\n"
+            f"Debate Topic:\n{debate_topic.get('description')}\n\n"
             f"Limit each of your responses to 300 words.\n\n"
         )
-    return base_prompt
