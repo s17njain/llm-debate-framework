@@ -1,24 +1,22 @@
-# llms/llms_manager.py
-
 from openai import OpenAI
 import anthropic
 from google import genai
 from google.genai import types
-from config import API_KEYS, MODELS, SYSTEM_ROLE_CONTENT
+from config import API_KEYS, MODELS, DEBATER_ROLE_CONTENT
 
-def get_response_from_llm(model, prompt):
+def get_response_from_llm(model, prompt, system_role_content = DEBATER_ROLE_CONTENT):
         if (model == "GPT"):
-            return get_response_from_gpt(model, prompt)
+            return _get_response_from_gpt(model, prompt, system_role_content)
         elif (model == "DEEPSEEK"):
-            return get_response_from_deepseek()
+            return _get_response_from_deepseek(model, prompt, system_role_content)
         elif (model == "CLAUDE"):
-            return get_response_from_claude()
+            return _get_response_from_claude(model, prompt, system_role_content)
         elif (model == "GEMINI"):
-            return get_response_from_gemini()
+            return _get_response_from_gemini(model, prompt, system_role_content)
         else:
             return ""
 
-def get_response_from_gpt(model, prompt, system_role_content = SYSTEM_ROLE_CONTENT):
+def _get_response_from_gpt(model, prompt, system_role_content):
     client = OpenAI(
         api_key = API_KEYS.get(model)
     )
@@ -35,7 +33,7 @@ def get_response_from_gpt(model, prompt, system_role_content = SYSTEM_ROLE_CONTE
         print(f"Error extracting response from {model}: {e}")
         return {}
 
-def get_response_from_deepseek(model, prompt, system_role_content = SYSTEM_ROLE_CONTENT):
+def _get_response_from_deepseek(model, prompt, system_role_content):
     client = OpenAI(
         api_key = API_KEYS.get(model),
         base_url="https://api.deepseek.com/v1"
@@ -54,7 +52,7 @@ def get_response_from_deepseek(model, prompt, system_role_content = SYSTEM_ROLE_
         print(f"Error extracting response from {model}: {e}")
         return {}
 
-def get_response_from_claude(model, prompt, system_role_content = SYSTEM_ROLE_CONTENT):
+def _get_response_from_claude(model, prompt, system_role_content):
     client = anthropic.Anthropic(
         api_key = API_KEYS.get(model)
     )
@@ -71,7 +69,7 @@ def get_response_from_claude(model, prompt, system_role_content = SYSTEM_ROLE_CO
         print(f"Error extracting response from {model}: {e}")
         return {}
 
-def get_response_from_gemini(model, prompt, system_role_content = SYSTEM_ROLE_CONTENT):
+def _get_response_from_gemini(model, prompt, system_role_content):
     client = genai.Client(
         api_key = API_KEYS.get(model)
     )
@@ -86,4 +84,3 @@ def get_response_from_gemini(model, prompt, system_role_content = SYSTEM_ROLE_CO
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")
         return {}
-

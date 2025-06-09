@@ -1,54 +1,65 @@
-# debate/debate_runner.py
-
 import os
 import uuid
+import random
 from config import DEBATE_TOPICS, OUTPUT_DIR, TURN_LIMIT
 from utils.utils import get_models_to_roles_mapping
 from prompts.prompt_manager import get_base_prompt
 from llms.llms_manager import get_response_from_llm
+from judge.judge_manager import run_judging
 
-def run_debate_sessions():
+def run_debate_sessions(shuffle_speakers = False):
     os.makedirs(OUTPUT_DIR, exist_ok = True)
 
     models_to_roles_mappings = get_models_to_roles_mapping()
 
     for i, debate_topic in enumerate(DEBATE_TOPICS):
         for j, mapping in enumerate(models_to_roles_mappings):
-            session_id = f"debate_topic{i+1}_session_{j+1}_{uuid.uuid4().hex[:6]}"
-            print(f"\nStarting Debate Session: {session_id}")
+            session_id = f"debate_{i+1}_session_{j+1}_{uuid.uuid4().hex[:6]}"
+            print("--------------------------------------------------------------------------------")
+            print(f"Starting Debate Session: **{session_id}**\n")
 
-            # judge_model = [model for model, role in mapping.items() if role == "JUDGE"][0]
-            debate_assignments = {model: role for model, role in mapping.items() if role != "JUDGE"}
+            judge_assignment = {model: role for model, role in mapping.items() if role == "Judge"}
+            debate_assignments = {model: role for model, role in mapping.items() if role != "Judge"}
 
             transcript_path = os.path.join(OUTPUT_DIR, f"{session_id}_transcript.txt")
-            run_single_debate(session_id, debate_assignments, debate_topic, transcript_path)
 
-            # # pass transcript to judge
-            # transcript_path = os.path.join(OUTPUT_DIR, f"{session_id}_transcript.txt")
-            # run_judging(transcript_path=transcript_path, judge_model=judge_model, session_id=session_id)
+            # run current debate session
+            _run_single_debate(session_id, debate_assignments, debate_topic, transcript_path, shuffle_speakers)
 
-            print(f"\nDebate Session {session_id} concluded.\n")
+            # pass transcript to judge
+            run_judging(transcript_path, judge_assignment)
 
+            print(f"\nDebate session concluded.")
+            print(f"Debate transcript saved to: {transcript_path}")
+            print("--------------------------------------------------------------------------------\n")
 
-def run_single_debate(session_id, debate_assignments, debate_topic, transcript_path):
+def _run_single_debate(session_id, debate_assignments, debate_topic, transcript_path, shuffle_speakers):
     with open(transcript_path, "w") as f:
-        f.write(f"### Debate Session: {session_id}\n\n")
+        f.write(f"# Debate Session:\n{session_id}\n\n")
         f.write(f"## Debate Topic:\n{debate_topic.get('description')}\n\n")
-        f.write("## Role Assignments:\n")
+        f.write("## Debate Role Assignments:\n")
         for model, role in debate_assignments.items():
             f.write(f"{model}: {role}\n")
-        f.write("\n\n")
+        f.write("\n")
+        f.write("## Debate:\n")
 
     model_history = {}
     prev_responses = []
+    prev_speaker_order = []
+    prev_speaker = None
 
-    for turn in range(TURN_LIMIT):
-        print(f"\nTurn {turn + 1}")
+    for _ in range(TURN_LIMIT):
+        debate_assignments_items = list(debate_assignments.items())
 
-        with open(transcript_path, "a") as f:
-            f.write(f"## Turn {turn + 1}\n\n")
+        # shuffle order of speakers
+        if (shuffle_speakers):
+            while True:
+                random.shuffle(debate_assignments_items)
+                keys = [k for k, _ in debate_assignments_items]
+                if (not prev_speaker_order or keys != prev_speaker_order) and (prev_speaker is None or keys[0] != prev_speaker):
+                    break
 
-        for index, (model, role) in enumerate(debate_assignments.items()):
+        for model, role in debate_assignments_items:
             current_model_history = ""
 
             if (model in model_history):
@@ -57,7 +68,7 @@ def run_single_debate(session_id, debate_assignments, debate_topic, transcript_p
                 prompt = get_base_prompt(role, debate_topic)
                 current_model_history += prompt
 
-            if (len(prev_responses) > 2):
+            if (len(prev_responses) >= len(debate_assignments)):
                 prev_responses.pop(0)
 
             for prev_resp in prev_responses:
@@ -73,3 +84,7 @@ def run_single_debate(session_id, debate_assignments, debate_topic, transcript_p
 
             with open(transcript_path, "a") as f:
                 f.write(f"{model} ({role}):\n{response.strip()}\n\n")
+
+        if (shuffle_speakers):
+            prev_speaker_order = keys
+            prev_speaker = keys[-1]

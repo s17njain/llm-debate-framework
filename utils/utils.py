@@ -1,10 +1,8 @@
-# utils/utils.py
-
 import itertools
 from config import DEBATE_ROLES, MODELS
 
 def get_models_to_roles_mapping():
-    all_roles_perms = list(itertools.permutations(DEBATE_ROLES.keys()))
+    all_roles_perms = list(itertools.permutations(DEBATE_ROLES))
     models = list(MODELS.keys())
     unique_mappings = []
 
