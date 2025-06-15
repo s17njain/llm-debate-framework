@@ -3,14 +3,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# DEBATE_ROLES = {
-#     "CONSEQUENTIALIST": "Consequentialist",
-#     "DEONTOLOGIST": "Deontologist",
-#     "VIRTUE_ETHICIST": "Virtue Ethicist",
-#     "JUDGE": "Judge"
-# }
-
-DEBATE_ROLES = ["Consequentialist", "Deontologist", "Virtue Ethicist", "Judge"]
+DEBATE_ROLES = [
+    "Consequentialist",
+    "Deontologist",
+    "Virtue Ethicist",
+    "Judge"
+]
 
 MODELS = {
     "GPT": "gpt-4.1",
@@ -67,7 +65,3 @@ EVALUATION_RUBRIC = (
 OUTPUT_DIR = "transcripts"
 
 TURN_LIMIT = 3   # For now; can be adjusted
-
-DEBATER_ROLE_CONTENT = "You are a Legal-Ethical Analyst."
-
-JUDGE_ROLE_CONTENT = "You are an impartial Legal-Ethical Evaluator."

@@ -48,6 +48,7 @@ def _run_single_debate(session_id, debate_assignments, debate_topic, transcript_
     prev_speaker_order = []
     prev_speaker = None
 
+    debate_starter = True
     for _ in range(TURN_LIMIT):
         debate_assignments_items = list(debate_assignments.items())
 
@@ -75,7 +76,8 @@ def _run_single_debate(session_id, debate_assignments, debate_topic, transcript_
                 current_model_history += prev_resp
 
             print(f"{model} ({role}) responding...")
-            # response = get_response_from_llm(model, current_model_history)
+            # response = get_response_from_llm(model, (current_model_history + ("Empty\n\n" if debate_starter else "")))
+            debate_starter = False
             response = f"Hello from {model}"
 
             current_model_history += f"You ({role}):\n{response.strip()}\n\n"
