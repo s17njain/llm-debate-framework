@@ -37,9 +37,10 @@ def get_base_prompt(role, debate_topic = None):
             f"After evaluating all participants, please answer the question: **Which participant's position do you find most convincing, and why?**\n\n"
             f"## Response Format:\n"
             f"- Use numbered lists or bullet points for clarity.\n"
-            f"- Limit your response to **1200 words**.\n\n"
+            f"- Limit your response to **1000 words**.\n\n"
             f"## Reminder:\n"
             f"Stay impartial and strictly adhere to the rubric and debate content.\n\n"
+            f"Please respond using only plain ASCII characters. Avoid all Unicode characters, special symbols, emojis, and non-English letters.\n\n"
             f"Begin your evaluation now.\n\n"
         )
     else:
@@ -62,6 +63,7 @@ def get_base_prompt(role, debate_topic = None):
             f"- Apply relevant ethical principles logically to the debate, use clear reasoning and respond with a firm position.\n\n"
             f"## Reminder:\n"
             f"Persuade others or refute counterpoints, always within your ethical framework.\n\n"
+            f"Please respond using only plain ASCII characters. Avoid all Unicode characters, special symbols, emojis, and non-English letters.\n\n"
             f"Proceed with your argument.\n\n"
             f"## Debate:\n"
         )

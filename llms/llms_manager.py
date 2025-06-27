@@ -2,21 +2,21 @@ from openai import OpenAI
 import anthropic
 from google import genai
 from config import API_KEYS, MODELS
-import sys
+from utils.utils import update_tokens_usage
 
-def get_response_from_llm(model, prompt):
-        if (model == "GPT"):
-            return _get_response_from_gpt(model, prompt)
-        elif (model == "DEEPSEEK"):
-            return _get_response_from_deepseek(model, prompt)
-        elif (model == "CLAUDE"):
-            return _get_response_from_claude(model, prompt)
-        elif (model == "GEMINI"):
-            return _get_response_from_gemini(model, prompt)
-        else:
-            return ""
+def get_response_from_llm(model, prompt, token_usages):
+    if (model == "GPT"):
+        return _get_response_from_gpt(model, prompt, token_usages)
+    elif (model == "DEEPSEEK"):
+        return _get_response_from_deepseek(model, prompt, token_usages)
+    elif (model == "CLAUDE"):
+        return _get_response_from_claude(model, prompt, token_usages)
+    elif (model == "GEMINI"):
+        return _get_response_from_gemini(model, prompt, token_usages)
+    else:
+        return ""
 
-def _get_response_from_gpt(model, prompt):
+def _get_response_from_gpt(model, prompt, token_usages):
     client = OpenAI(
         api_key = API_KEYS.get(model)
     )
@@ -27,12 +27,13 @@ def _get_response_from_gpt(model, prompt):
                 {"role": "user", "content": prompt}
             ]
         )
+        update_tokens_usage(model, token_usages.get(model), response.usage)
         return response.output_text
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")
         return {}
 
-def _get_response_from_deepseek(model, prompt):
+def _get_response_from_deepseek(model, prompt, token_usages):
     client = OpenAI(
         api_key = API_KEYS.get(model),
         base_url="https://api.deepseek.com/v1"
@@ -42,15 +43,15 @@ def _get_response_from_deepseek(model, prompt):
             model = MODELS.get(model),
             messages = [
                 {"role": "user", "content": prompt}
-            ],
-            stream = False
+            ]
         )
+        update_tokens_usage(model, token_usages.get(model), response.usage)
         return response.choices[0].message.content
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")
         return {}
 
-def _get_response_from_claude(model, prompt):
+def _get_response_from_claude(model, prompt, token_usages):
     client = anthropic.Anthropic(
         api_key = API_KEYS.get(model)
     )
@@ -62,12 +63,13 @@ def _get_response_from_claude(model, prompt):
                 {"role": "user", "content": prompt}
             ]
         )
+        update_tokens_usage(model, token_usages.get(model), response.usage)
         return response.content[0].text
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")
         return {}
 
-def _get_response_from_gemini(model, prompt):
+def _get_response_from_gemini(model, prompt, token_usages):
     client = genai.Client(
         api_key = API_KEYS.get(model)
     )
@@ -76,6 +78,7 @@ def _get_response_from_gemini(model, prompt):
             model = MODELS.get(model),
             contents = prompt
         )
+        update_tokens_usage(model, token_usages.get(model), response.usage_metadata)
         return response.text
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")

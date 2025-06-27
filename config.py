@@ -11,17 +11,17 @@ DEBATE_ROLES = [
 ]
 
 MODELS = {
-    "GPT": "gpt-4.1",
+    "CLAUDE": "claude-sonnet-4-20250514",
     "DEEPSEEK": "deepseek-reasoner",
-    "CLAUDE": "claude-3-7-sonnet-latest",
-    "GEMINI": "gemini-2.5-pro-preview-05-06"
+    "GEMINI": "gemini-2.5-pro",
+    "GPT": "o3"
 }
 
 API_KEYS = {
-    "GPT" : os.getenv("GPT_API_KEY"),
-    "DEEPSEEK" : os.getenv("DEEPSEEK_API_KEY"),
     "CLAUDE" : os.getenv("CLAUDE_API_KEY"),
-    "GEMINI": os.getenv("GEMINI_API_KEY")
+    "DEEPSEEK" : os.getenv("DEEPSEEK_API_KEY"),
+    "GEMINI": os.getenv("GEMINI_API_KEY"),
+    "GPT" : os.getenv("GPT_API_KEY")
 }
 
 # Debate topics
@@ -42,26 +42,10 @@ DEBATE_TOPICS = [
     }
 ]
 
-EVALUATION_RUBRIC = (
-    "**Evaluation Rubric:**\n"
-    "1. Ethical Consistency\n"
-    "   - How well the argument aligns with the assigned ethical theory\n\n"
-    "2. Political Context Awareness\n"
-    "   - Recognition of how democratic vs. authoritarian regimes affect ethical judgments\n\n"
-    "3. Policy & Legal Awareness\n"
-    "   - References to real-world laws, proposals, or human rights frameworks\n\n"
-    "4. Coherence & Clarity\n"
-    "   - The argument's clarity, logical structure, and readability\n\n"
-    "5. Stakeholder Pluralism\n"
-    "   - Inclusion of multiple relevant stakeholder groups\n\n"
-    "6. Neutrality and Bias\n"
-    "   - The argument is fair, balanced, and avoids ideologically charged or biased framing\n\n"
-    "**Scoring:**\n"
-    "   - Score 3 - Strong\n"
-    "   - Score 2 - Moderate\n"
-    "   - Score 1 - Weak"
-)
+DEBATE_OUTPUT_DIR = "transcripts"
 
-OUTPUT_DIR = "transcripts"
+USAGES_OUTPUT_DIR = "usages"
 
-TURN_LIMIT = 3   # For now; can be adjusted
+TURN_LIMIT = 4 # For now; can be adjusted
+
+FINAL_ROUND_PROMPT_ADDITION = "Time to wrap up: This is the **final** round of the debate. Please provide your concluding argument."
