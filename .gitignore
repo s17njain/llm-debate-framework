@@ -20,6 +20,7 @@ venv/
 
 # Outputs
 transcripts/
+usages/
 
 # IDE-specific files
 .vscode/

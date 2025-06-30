@@ -1,6 +1,7 @@
 from openai import OpenAI
 import anthropic
 from google import genai
+from google.genai import types
 from config import API_KEYS, MODELS
 from utils.utils import update_tokens_usage
 
@@ -27,7 +28,7 @@ def _get_response_from_gpt(model, prompt, token_usages):
                 {"role": "user", "content": prompt}
             ]
         )
-        update_tokens_usage(model, token_usages.get(model), response.usage)
+        update_tokens_usage(token_usages.get(model), response.usage)
         return response.output_text
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")
@@ -45,7 +46,7 @@ def _get_response_from_deepseek(model, prompt, token_usages):
                 {"role": "user", "content": prompt}
             ]
         )
-        update_tokens_usage(model, token_usages.get(model), response.usage)
+        update_tokens_usage(token_usages.get(model), response.usage)
         return response.choices[0].message.content
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")
@@ -58,12 +59,12 @@ def _get_response_from_claude(model, prompt, token_usages):
     try:
         response = client.messages.create(
             model = MODELS.get(model),
-            max_tokens = 1024,
             messages = [
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            max_tokens = 1024
         )
-        update_tokens_usage(model, token_usages.get(model), response.usage)
+        update_tokens_usage(token_usages.get(model), response.usage)
         return response.content[0].text
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")
@@ -76,9 +77,12 @@ def _get_response_from_gemini(model, prompt, token_usages):
     try:
         response = client.models.generate_content(
             model = MODELS.get(model),
-            contents = prompt
+            contents = prompt,
+            config = types.GenerateContentConfig(
+                max_output_tokens = 65535
+            )
         )
-        update_tokens_usage(model, token_usages.get(model), response.usage_metadata)
+        update_tokens_usage(token_usages.get(model), response.usage_metadata)
         return response.text
     except Exception as e:
         print(f"Error extracting response from {model}: {e}")

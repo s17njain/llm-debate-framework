@@ -1,9 +1,9 @@
-from prompts.prompt_manager import get_base_prompt
+from prompts.prompt_manager import get_judge_base_prompt
 from llms.llms_manager import get_response_from_llm
 
 def run_judging(transcript_path, judge_assignment, token_usages):
     judge_model, judge_role = next(iter(judge_assignment.items()))
-    judge_base_prompt = get_base_prompt(judge_role)
+    judge_base_prompt = get_judge_base_prompt()
     
     debate_transcript = "**Debate Transcript:**\n"
     with open(transcript_path, "r", encoding='utf-8') as f:

@@ -9,33 +9,40 @@ INITIAL_USAGES = {
         "cached_tokens": 0,
         "output_tokens": 0,
         "reasoning_tokens": 0,
-        "total_tokens": 0
+        "total_tokens": 0,
+        "output_tokens_details": {
+            "reasoning_tokens": 0
+        }
     },
     "DEEPSEEK": {
         "completion_tokens": 0,
         "prompt_tokens": 0,
         "prompt_cache_hit_tokens": 0,
-        "prompt_cache_miss_token": 0,
         "total_tokens": 0,
-        "reasoning_tokens": 0
+        "reasoning_tokens": 0,
+        "completion_tokens_details": {
+            "reasoning_tokens": 0
+        },
+        "prompt_cache_miss_tokens": 0
     },
     "CLAUDE": {
         "cache_creation_input_tokens": 0,
         "cache_read_input_tokens": 0,
         "input_tokens": 0,
-        "output_tokens": 0
+        "output_tokens": 0,
     },
     "GEMINI": {
         "cached_content_token_count": 0,
         "candidates_token_count": 0,
         "prompt_token_count": 0,
         "thoughts_token_count": 0,
-        "total_token_count": 0
+        "total_token_count": 0,
     }
 }
 
 def get_models_to_roles_mapping():
     all_roles_perms = list(itertools.permutations(DEBATE_ROLES))
+    random.shuffle(all_roles_perms)
     models = list(MODELS.keys())
     random.shuffle(models)
     unique_mappings = []
@@ -61,59 +68,6 @@ def get_models_to_roles_mapping():
 
     return unique_mappings
 
-def update_tokens_usage(model, current_token_usage, new_token_usage):
-    if (model == "GPT"):
-        return _update_gpt_usage(current_token_usage, new_token_usage)
-    elif (model == "DEEPSEEK"):
-        return _update_deepseek_usage(current_token_usage, new_token_usage)
-    elif (model == "CLAUDE"):
-        return _update_claude_usage(current_token_usage, new_token_usage)
-    elif (model == "GEMINI"):
-        return _update_gemini_usage(current_token_usage, new_token_usage)
-    else:
-        return ""
-
-
-def _update_gpt_usage(current_token_usage, new_token_usage):
-    if new_token_usage:
-        new_token_usage_dict = new_token_usage.dict()
-        current_token_usage["input_tokens"] += new_token_usage_dict.get("input_tokens") or 0
-        current_token_usage["cached_tokens"] += new_token_usage_dict.get("input_tokens_details", {}).get("cached_tokens") or 0
-        current_token_usage["output_tokens"] += new_token_usage_dict.get("output_tokens") or 0
-        current_token_usage["reasoning_tokens"] += new_token_usage_dict.get("output_tokens_details", {}).get("reasoning_tokens") or 0
-        current_token_usage["total_tokens"] += new_token_usage_dict.get("total_tokens") or 0
-    return current_token_usage
-
-def _update_deepseek_usage(current_token_usage, new_token_usage):
-    if new_token_usage:
-        new_token_usage_dict = new_token_usage.dict()
-        current_token_usage["completion_tokens"] += new_token_usage_dict.get("completion_tokens") or 0
-        current_token_usage["prompt_tokens"] += new_token_usage_dict.get("prompt_tokens") or 0
-        current_token_usage["prompt_cache_hit_tokens"] += new_token_usage_dict.get("prompt_cache_hit_tokens") or 0
-        current_token_usage["prompt_cache_miss_token"] += new_token_usage_dict.get("prompt_cache_miss_token") or 0
-        current_token_usage["total_tokens"] += new_token_usage_dict.get("total_tokens") or 0
-        current_token_usage["reasoning_tokens"] += new_token_usage_dict.get("completion_tokens_details", {}).get("reasoning_tokens") or 0
-    return current_token_usage
-
-def _update_claude_usage(current_token_usage, new_token_usage):
-    if new_token_usage:
-        new_token_usage_dict = new_token_usage.dict()
-        current_token_usage["cache_creation_input_tokens"] += new_token_usage_dict.get("cache_creation_input_tokens") or 0
-        current_token_usage["cache_read_input_tokens"] += new_token_usage_dict.get("cache_read_input_tokens") or 0
-        current_token_usage["input_tokens"] += new_token_usage_dict.get("input_tokens") or 0
-        current_token_usage["output_tokens"] += new_token_usage_dict.get("output_tokens") or 0
-    return current_token_usage
-
-def _update_gemini_usage(current_token_usage, new_token_usage):
-    if new_token_usage:
-        new_token_usage_dict = new_token_usage.dict()
-        current_token_usage["cached_content_token_count"] += new_token_usage_dict.get("cached_content_token_count") or 0
-        current_token_usage["candidates_token_count"] += new_token_usage_dict.get("candidates_token_count") or 0
-        current_token_usage["prompt_token_count"] += new_token_usage_dict.get("prompt_token_count") or 0
-        current_token_usage["thoughts_token_count"] += new_token_usage_dict.get("thoughts_token_count") or 0
-        current_token_usage["total_token_count"] += new_token_usage_dict.get("total_token_count") or 0
-    return current_token_usage
-
 def write_to_json_file(output_file, content):
     try:
         with open(output_file, 'w', encoding = "utf-8") as f:
@@ -122,3 +76,36 @@ def write_to_json_file(output_file, content):
         print(f"Error writing to file: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
+def safe_int(val):
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return 0
+
+def to_dict(obj):
+    if isinstance(obj, dict):
+        return obj
+    elif hasattr(obj, "dict") and callable(obj.dict):
+        return obj.dict()
+    elif hasattr(obj, "__dict__"):
+        return vars(obj)
+    else:
+        return obj
+
+def update_tokens_usage(current_token_usage, new_token_usage):
+    new_token_usage = to_dict(new_token_usage)
+    for key, value in new_token_usage.items():
+        if key not in current_token_usage:
+            continue
+
+        val = to_dict(value)
+
+        if isinstance(val, dict):
+            if not isinstance(current_token_usage.get(key), dict):
+                current_token_usage[key] = {}
+            update_tokens_usage(current_token_usage[key], val)
+        else:
+            current_token_usage[key] = safe_int(current_token_usage.get(key, 0)) + safe_int(val)
+    return current_token_usage
+

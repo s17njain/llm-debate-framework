@@ -4,7 +4,7 @@ import uuid
 import random
 from config import DEBATE_TOPICS, DEBATE_OUTPUT_DIR, USAGES_OUTPUT_DIR, TURN_LIMIT, FINAL_ROUND_PROMPT_ADDITION
 from utils.utils import get_models_to_roles_mapping, write_to_json_file, INITIAL_USAGES
-from prompts.prompt_manager import get_base_prompt
+from prompts.prompt_manager import DEBATE_PROMPTS_TYPE, get_debate_base_prompt
 from llms.llms_manager import get_response_from_llm
 from judge.judge_manager import run_judging
 
@@ -14,37 +14,38 @@ def run_debate_sessions(shuffle_speakers = False):
 
     models_to_roles_mappings = get_models_to_roles_mapping()
 
-    for i, debate_topic in enumerate(DEBATE_TOPICS):
-        for j, mapping in enumerate(models_to_roles_mappings):
-            session_id = f"debate_{i+1}_session_{j+1}_{uuid.uuid4().hex[:6]}"
-            
-            # token usages for LLMs
-            token_usages = copy.deepcopy(INITIAL_USAGES)
+    for prompt_type in DEBATE_PROMPTS_TYPE:
+        for i, debate_topic in enumerate(DEBATE_TOPICS):
+            for j, mapping in enumerate(models_to_roles_mappings):
+                session_id = f"debate_{i+1}_session_{j+1}_{prompt_type}_prompt_{uuid.uuid4().hex[:6]}"
+                
+                # token usages for LLMs
+                token_usages = copy.deepcopy(INITIAL_USAGES)
 
-            print("---------------------------------------------------------------------------------")
-            print(f"Starting Debate Session: **{session_id}**\n")
+                print("---------------------------------------------------------------------------------")
+                print(f"Starting Debate Session: **{session_id}**\n")
 
-            judge_assignment = {model: role for model, role in mapping.items() if role == "Judge"}
-            debate_assignments = {model: role for model, role in mapping.items() if role != "Judge"}
+                judge_assignment = {model: role for model, role in mapping.items() if role == "Judge"}
+                debate_assignments = {model: role for model, role in mapping.items() if role != "Judge"}
 
-            transcript_path = os.path.join(DEBATE_OUTPUT_DIR, f"{session_id}_transcript.md")
+                transcript_path = os.path.join(DEBATE_OUTPUT_DIR, f"{session_id}_transcript.md")
 
-            # run current debate session
-            _run_single_debate(session_id, debate_assignments, debate_topic, transcript_path, shuffle_speakers, token_usages)
+                # run current debate session
+                _run_single_debate(session_id, debate_assignments, prompt_type, debate_topic, transcript_path, shuffle_speakers, token_usages)
 
-            # pass transcript to judge
-            run_judging(transcript_path, judge_assignment, token_usages)
+                # pass transcript to judge
+                run_judging(transcript_path, judge_assignment, token_usages)
 
-            print(f"\nDebate session concluded.")
-            print(f"Debate transcript saved to: {transcript_path}")
+                print(f"\nDebate session concluded.")
+                print(f"Debate transcript saved to: {transcript_path}")
 
-            # save token usages
-            token_usages_path = os.path.join(USAGES_OUTPUT_DIR, f"{session_id}_token_usages.json")
-            write_to_json_file(token_usages_path, token_usages)
-            print(f"Token usages saved to: {token_usages_path}")
-            print("---------------------------------------------------------------------------------\n")
+                # save token usages
+                token_usages_path = os.path.join(USAGES_OUTPUT_DIR, f"{session_id}_token_usages.json")
+                write_to_json_file(token_usages_path, token_usages)
+                print(f"Token usages saved to: {token_usages_path}")
+                print("---------------------------------------------------------------------------------\n")
 
-def _run_single_debate(session_id, debate_assignments, debate_topic, transcript_path, shuffle_speakers, token_usages):
+def _run_single_debate(session_id, debate_assignments, prompt_type, debate_topic, transcript_path, shuffle_speakers, token_usages):
     with open(transcript_path, "w", encoding='utf-8') as f:
         f.write(f"# Debate Session:\n{session_id}\n\n")
         f.write(f"## Debate Topic:\n{debate_topic.get('description')}\n\n")
@@ -79,7 +80,7 @@ def _run_single_debate(session_id, debate_assignments, debate_topic, transcript_
             if (model in model_history):
                 current_model_history += model_history.get(model)
             else:
-                prompt = get_base_prompt(role, debate_topic)
+                prompt = get_debate_base_prompt(prompt_type, role, debate_topic)
                 current_model_history += prompt
 
             if (len(prev_responses) >= len(debate_assignments_items)):
