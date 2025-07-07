@@ -108,4 +108,3 @@ def update_tokens_usage(current_token_usage, new_token_usage):
         else:
             current_token_usage[key] = safe_int(current_token_usage.get(key, 0)) + safe_int(val)
     return current_token_usage
-
