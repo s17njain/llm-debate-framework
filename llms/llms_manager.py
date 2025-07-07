@@ -62,7 +62,7 @@ def _get_response_from_claude(model, prompt, token_usages):
             messages = [
                 {"role": "user", "content": prompt}
             ],
-            max_tokens = 1024
+            max_tokens = 4999
         )
         update_tokens_usage(token_usages.get(model), response.usage)
         return response.content[0].text
