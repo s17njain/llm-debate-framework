@@ -46,6 +46,6 @@ DEBATE_OUTPUT_DIR = "transcripts"
 
 USAGES_OUTPUT_DIR = "usages"
 
-TURN_LIMIT = 4 # For now; can be adjusted
+TURN_LIMIT = 4
 
 FINAL_ROUND_PROMPT_ADDITION = "Time to wrap up: This is the **final** round of the debate. Please provide your concluding argument."
