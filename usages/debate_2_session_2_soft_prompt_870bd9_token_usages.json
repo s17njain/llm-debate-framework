@@ -1,0 +1,36 @@
+{
+    "GPT": {
+        "input_tokens": 10926,
+        "cached_tokens": 0,
+        "output_tokens": 2466,
+        "reasoning_tokens": 0,
+        "total_tokens": 13392,
+        "output_tokens_details": {
+            "reasoning_tokens": 768
+        }
+    },
+    "DEEPSEEK": {
+        "completion_tokens": 2880,
+        "prompt_tokens": 7779,
+        "prompt_cache_hit_tokens": 3968,
+        "total_tokens": 10659,
+        "reasoning_tokens": 0,
+        "completion_tokens_details": {
+            "reasoning_tokens": 1465
+        },
+        "prompt_cache_miss_tokens": 3811
+    },
+    "CLAUDE": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 10334,
+        "output_tokens": 1559
+    },
+    "GEMINI": {
+        "cached_content_token_count": 0,
+        "candidates_token_count": 1696,
+        "prompt_token_count": 5540,
+        "thoughts_token_count": 2213,
+        "total_token_count": 9449
+    }
+}
